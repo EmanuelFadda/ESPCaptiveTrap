@@ -5,8 +5,8 @@
 
 
 // access point generato dall'esp
-char *ssid_esp="prova";
-char *psw_esp="";
+char *ssid_esp="test";
+char *psw_esp="1234";
 
 
 DNSServer dnsServer;
@@ -24,7 +24,8 @@ const char index_html[] PROGMEM= R"rawliteral(
       </head>
     
     <body>
-      <h1>Login..</h1>
+      <h1>GO AWAY, THIS IS A FAKE LOGIN!!!</h1>
+      <p>Form used for debugging purpose.</p>
       <form action="/login">
         Your email Google : <input type="email" name="email"></input>
         Password : <input type="password" name="password"></input>
@@ -86,7 +87,7 @@ void setupServerPages(){
 }
 
 
-void setESPLocalNetwork(ssid,psw,accesspoint,gateway,subnet){
+void setESPLocalNetwork(char* ssid,char* psw,IPAddress accesspoint,IPAddress gateway,IPAddress subnet){
 
   WiFi.mode(WIFI_AP);
   WiFi.softAPConfig(accesspoint,gateway,subnet);
@@ -111,7 +112,7 @@ void setup() {
   Serial.begin(115200);
 
 
-  
+
   // setESPLocalNetwork(ssid_esp,psw_esp,IPAddress(8,8,8,8), IPAddress(8,8,8,8), IPAddress(255,255,255,0));
 }
 
