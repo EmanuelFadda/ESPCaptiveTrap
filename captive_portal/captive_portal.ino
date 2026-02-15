@@ -1,15 +1,44 @@
+# include "active_mode.h"
+# include "setting_mode.h"
+
+TaskHandle_t taskCore0Handle=NULL;
+TaskHandle_t taskCore1Handle=NULL;
+
+
+
 void setup() {
   Serial.begin(115200);
-  Serial.println("START");
-  setupBLE("ESPSERVER");
+  Serial.println("START SETUP");
   
+  
+  Serial.println("STARTING CORE...");
+  xTaskCreatePinnedToCore(
+    loopCore0,          // funzione da eseguire
+    "loopCore0",        // nome task
+    8192,               // dimensione stack
+    NULL,               // parametro
+    1,                  // priorità
+    &taskCore0Handle,   // handle
+    0                   // core 0
+  );
 
-  commandHandler();
-  //setupESPLocalNetwork(ssid_esp,psw_esp,IPAddress(8,8,8,8), IPAddress(8,8,8,8), IPAddress(255,255,255,0));
-  Serial.println("Done");
+  // Creazione task su core 1
+  xTaskCreatePinnedToCore(
+    loopCore1,
+    "loopCore1",
+    2048,
+    NULL,
+    1,
+    &taskCore1Handle,
+    1                   // core 1
+  );
+
+  Serial.println("DONE");
 }
 
-void loop() {
-  //dnsServer.processNextRequest();
-  delay(20);
-}
+
+void loop() {}
+
+
+
+

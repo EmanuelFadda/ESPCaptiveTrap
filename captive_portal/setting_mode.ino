@@ -20,11 +20,6 @@ lifecycle of the connection:
 
 
 */
-#include "BLEDevice.h"
-#include "BLEServer.h"
-#include "BLEUtils.h"
-#include "BLE2902.h"
-
 
 // UUID identify wich BLE service is used, in this case Nordic UART Service
 #define SERVICE_UUID           "6e400001-b5a3-f393-e0a9-e50e24dcca9e"
@@ -37,23 +32,35 @@ BLECharacteristic *pRX;
 
 bool deviceConnected = false;
 bool deviceLogged=false;
-
-long lastMsg = 0;
 String rxload="";
 
+char *psw_bluetooth ="1234";
+
+
+
+void loopCore0(void* p){
+  Serial.begin(115200);
+  setupBLE("ESPSERVER");
+  // handle bluetooth connection
+  while (true){
+    commandHandler();
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+
+  }
+}
 
 // server callback
 class ESPServerCallbacks: public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) {
       deviceConnected = true;
       deviceLogged=false;
-      Serial.println("Device connected");
+      Serial.println("[CORE 0] -> Device connected");
     };
     void onDisconnect(BLEServer* pServer) {
       // not connected -> not logged
       deviceConnected = false;
       deviceLogged=false;
-      Serial.println("Device disconnected");
+      Serial.println("[CORE 0] -> Device disconnected");
       pServer->getAdvertising()->start(); //Reopen the pServer and wait for the connection.
     }
 };
@@ -107,7 +114,7 @@ void setupBLE(String BLEName){
 
   // starting server and service
   pServer->getAdvertising()->start();
-  Serial.println("Waiting a client connection to notify...");
+  Serial.println("[CORE 0]  -> Waiting a client connection to notify...");
 }
 
 
@@ -115,7 +122,7 @@ void setupBLE(String BLEName){
 bool a_send(String value){
   // maybe we need a buffer but at the moment is better using the string 
   const char*newValue=value.c_str();
-  Serial.print("ESP32: ");Serial.println(newValue);
+  Serial.print("[CORE 0] -> ESP32: ");Serial.println(newValue);
 
   pTX->setValue(newValue);
   pTX->notify();
@@ -127,12 +134,13 @@ bool a_send(String value){
 String s_recv(){
   // rxload will be initialited by the class RXCallback with "onWrite"
   while (rxload=="" || !deviceConnected){
-    delay(500);
+    vTaskDelay(500 / portTICK_PERIOD_MS);
+
   }
 
   String out=String(rxload);
   out.trim();
-  Serial.println("DEVICE : " +out);
+  Serial.println("[CORE 0] -> DEVICE : " +out);
   rxload="";
   return out;
 }
