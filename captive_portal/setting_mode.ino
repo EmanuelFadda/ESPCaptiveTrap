@@ -26,6 +26,13 @@ lifecycle of the connection:
 #define CHARACTERISTIC_UUID_RX "6e400002-b5a3-f393-e0a9-e50e24dcca9e"
 #define CHARACTERISTIC_UUID_TX "6e400003-b5a3-f393-e0a9-e50e24dcca9e"
 
+#define LOGIN 0
+#define LOGOUT 1
+#define GET_NET 2
+#define SET_NET 3
+#define GET_MSG 4
+#define GET_BLE 5
+#define SET_BLE 6 
 
 BLECharacteristic *pTX;
 BLECharacteristic *pRX;
@@ -45,6 +52,39 @@ void loopCore0(void* p){
   while (true){
     commandHandler();
     vTaskDelay(1000 / portTICK_PERIOD_MS);
+
+  }
+}
+
+
+void commandHandler(){
+  // the device will send a command first
+  String cmd=s_recv();
+  if (!deviceLogged){
+    authBLEConnection();
+  }else{
+    int cmd_value=cmd.toInt();
+
+    switch (cmd_value){
+      case LOGIN:
+        deviceLogged=false;
+        authBLEConnection();
+        break;
+      case LOGOUT:
+        deviceLogged=false;
+        break;
+      case GET_NET:
+
+        break;
+      case SET_NET:
+        break;
+      case GET_MSG:
+        break;
+      case GET_BLE:
+        break;
+      case SET_BLE:
+        break;
+    }
 
   }
 }
@@ -146,15 +186,7 @@ String s_recv(){
 }
 
 
-void commandHandler(){
-  // the device will send a command first
-  String cmd=s_recv();
-  if (!deviceLogged){
-    authBLEConnection();
-  }else{
-    // all services
-  }
-}
+
 
 // in core 
 void authBLEConnection(){

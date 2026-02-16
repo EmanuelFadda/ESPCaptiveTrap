@@ -13,13 +13,13 @@ void setup() {
   
   Serial.println("STARTING CORE...");
   xTaskCreatePinnedToCore(
-    loopCore0,          // funzione da eseguire
-    "loopCore0",        // nome task
-    8192,               // dimensione stack
-    NULL,               // parametro
-    1,                  // priorità
-    &taskCore0Handle,   // handle
-    0                   // core 0
+    loopCore0,          
+    "loopCore0",        
+    8192,               
+    NULL,               
+    1,                  
+    &taskCore0Handle,   
+    0                    
   );
 
   // Creazione task su core 1
